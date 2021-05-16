@@ -2,6 +2,7 @@ import argparse
 import os
 import yaml
 
+import mlflow
 from sklearn.metrics import classification_report
 import torch
 import torch.nn as nn
@@ -86,6 +87,18 @@ def main():
     dataset_name = config['dataset']['data_name']
     model_name = config['model']['model_name']
     model_ckpt_dir = config['model_directory']
+    learning_rate=config['training']['learning_rate']
+    momentum=config['training']['momentum']
+    weight_decay=config['training']['weight_decay']
+    epochs = config['training']['epochs']
+
+    mlflow.start_run()
+    mlflow.log_param(key='learning_rate', value=learning_rate)
+    mlflow.log_param(key='momentum', value=momentum)
+    mlflow.log_param(key='weight_decay', value=weight_decay)
+    mlflow.log_param(key='epochs', value=epochs)
+
+    mlflow.log_artifact(model_ckpt_dir)
 
     os.makedirs(model_ckpt_dir, exist_ok=True)
 
@@ -100,12 +113,12 @@ def main():
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(
         model.parameters(),
-        lr=config['training']['learning_rate'],
-        momentum=config['training']['momentum'],
-        weight_decay=config['training']['weight_decay'])
+        lr=learning_rate,
+        momentum=momentum,
+        weight_decay=weight_decay)
 
     # Train and test.
-    epochs = config['training']['epochs']
+
     for epoch in range(epochs+1):
         # Train and test a model.
         train_acc, train_loss = train(model, device, train_loader, criterion, optimizer)
@@ -115,12 +128,19 @@ def main():
         stdout_temp = 'epoch: {:>3}, train acc: {:<8}, train loss: {:<8}, test acc: {:<8}, test loss: {:<8}'
         print(stdout_temp.format(epoch+1, train_acc, train_loss, test_acc, test_loss))
 
-        # Save a model checkpoint.
+        mlflow.log_metric(key='train_acc', value=train_acc)
+        mlflow.log_metric(key='train_loss', value=train_loss)
+        mlflow.log_metric(key='test_acc', value=test_acc)
+        mlflow.log_metric(key='test_loss', value=test_loss)
+
+    # Save a model checkpoint.
         model_ckpt_path_temp = './experiments/models/checkpoints/{}_{}_epoch={}.pth'
         model_ckpt_path = model_ckpt_path_temp.format(dataset_name, model_name, epoch+1)
         torch.save(model.state_dict(), model_ckpt_path)
         print('Saved a model checkpoint at {}'.format(model_ckpt_path))
         print('')
+
+    mlflow.end_run()
 
 if __name__ == '__main__':
     main()
