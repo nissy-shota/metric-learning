@@ -1,0 +1,13 @@
+data_directory: ./data
+model_directory: ./experiments
+model:
+  model_name: ResNet50
+dataset:
+  data_name: CIFAR10
+
+training:
+  learning_rate: 0.1
+  momentum: 0.9
+  epochs : 20
+  weight_decay: 0.0005
+  verbose : 1
