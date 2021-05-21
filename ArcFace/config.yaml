@@ -11,3 +11,10 @@ training:
   epochs : 20
   weight_decay: 0.0005
   verbose : 1
+
+
+arcface_param:
+  feats : 512
+  norm : 30
+  margin : 0.5
+  easy_margin : True
