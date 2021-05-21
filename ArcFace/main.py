@@ -27,9 +27,7 @@ def train(device, train_loader, model, metric_fc, criterion, optimizer):
     target_list = []
     running_loss = 0.0
     for batch_idx, (inputs, targets) in enumerate(train_loader):
-        print(targets)
 
-        1/0
         # Forward processing.
         inputs, targets = inputs.to(device), targets.to(device).long()
         features = model(inputs)
@@ -131,8 +129,8 @@ def main():
 
     for epoch in range(epochs+1):
         # Train and test a model.
-        train_acc, train_loss = train(model, device, train_loader, criterion, optimizer)
-        test_acc, test_loss = test(model, device, test_loader, criterion)
+        train_acc, train_loss = train(device, train_loader, model, metric, criterion, optimizer)
+        test_acc, test_loss = test(device, test_loader, model, metric, criterion)
 
         # Output score.
         stdout_temp = 'epoch: {:>3}, train acc: {:<8}, train loss: {:<8}, test acc: {:<8}, test loss: {:<8}'
